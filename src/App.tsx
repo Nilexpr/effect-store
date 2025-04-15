@@ -1,8 +1,11 @@
-import { createEffectStore } from "./components/effect-store";
+import { useSyncExternalStore } from "react";
+import { createDataStore } from "./components/data-store/store";
 
-const store = createEffectStore();
+const dataStore = createDataStore();
 
 function App() {
+  const todos = useSyncExternalStore();
+
   return (
     <section className="">
       <div>123</div>
