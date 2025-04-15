@@ -16,6 +16,9 @@ export class Data<D, R> {
   /** 给 React 用的 */
   private onStoreChange?: () => void;
 
+  /** 唯一 Key */
+  key: IKey;
+
   constructor(
     /** 初始数据 */
     originData: IOriginData<D>,
@@ -24,7 +27,9 @@ export class Data<D, R> {
     /** 更新回调 */
     private updateCallback: (origin: Data<D, R>) => void,
     /** 获取依赖对象 */
-    private getDepsMap: (deps: Set<IKey>) => Record<string, D>
+    private getDepsMap: (deps: Set<IKey>) => Record<string, D>,
+    /** 唯一 Key */
+    key: IKey
   ) {
     const { value, ...rest } = originData;
     this.value = value;
@@ -34,18 +39,26 @@ export class Data<D, R> {
 
     this.deps = new Set(...deps);
     this.dependents = new Set();
+
+    this.key = key;
   }
 
-  setValue(newValue: D) {
-    this.value = newValue;
+  update() {
     this.result = this.createStoreMethods.evaluate(
       this.value,
       this.getDepsMap(this.deps)
     );
-
     this.onStoreChange?.();
-
     this.updateCallback(this);
+  }
+
+  setValue(newValue: D) {
+    this.value = newValue;
+    this.update();
+  }
+
+  getValue() {
+    return this.value;
   }
 
   getDependents() {
