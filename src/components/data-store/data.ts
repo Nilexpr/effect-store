@@ -1,22 +1,36 @@
-import { ICreateDataStoreParams, IData, IOriginData } from "./interfaces/data";
+import { ICreateDataStoreParams, IKey, IOriginData } from "./interfaces/data";
 
-export class Data<D, R> implements IData<D, R> {
-  [key: string]: unknown;
-  value: D;
-  deps: Set<string>;
-  dependents: Set<string>;
+export class Data<D, R> {
+  /** 需要参与计算的值 */
+  private value: D;
+  /** 计算结果 */
+  private result: R | null = null;
+  /** 其他的值，Store 不关心 */
+  extra: {
+    [key: string]: unknown;
+  };
+  /** 所有依赖项的 Key */
+  private deps: Set<IKey>;
+  /** 依赖当前项的 Key */
+  private dependents: Set<IKey>;
+  /** 给 React 用的 */
+  private onStoreChange?: () => void;
 
   constructor(
+    /** 初始数据 */
     originData: IOriginData<D>,
-    params: ICreateDataStoreParams<D, R>
+    /** 外部传入的一些工具函数 */
+    private createStoreMethods: ICreateDataStoreParams<D, R>,
+    /** 更新回调 */
+    private updateCallback: (origin: Data<D, R>) => void,
+    /** 获取依赖对象 */
+    private getDepsMap: (deps: Set<IKey>) => Record<string, D>
   ) {
     const { value, ...rest } = originData;
     this.value = value;
+    this.extra = rest;
 
-    Object.entries(rest).forEach(([key, value]) => {
-      this[key] = value;
-    });
-    const { deps } = params.parser(originData.value);
+    const { deps } = createStoreMethods.parser(originData.value);
 
     this.deps = new Set(...deps);
     this.dependents = new Set();
@@ -24,18 +38,37 @@ export class Data<D, R> implements IData<D, R> {
 
   setValue(newValue: D) {
     this.value = newValue;
-    const deps = getDepsValue(data).reduce((pre, cur) => {
-      const depKey = generateKey(cur);
-      pre[depKey] = cur.value;
-      return pre;
-    }, {} as Record<IKey, D>);
+    this.result = this.createStoreMethods.evaluate(
+      this.value,
+      this.getDepsMap(this.deps)
+    );
 
-    this.onUpdate(newValue, deps);
+    this.onStoreChange?.();
+
+    this.updateCallback(this);
   }
 
-  onUpdate(value: D, deps: Record<string, D>) {}
+  getDependents() {
+    return this.dependents;
+  }
 
-  subscribe(onStoreChange: () => void) {}
+  addDependents(newDependent: IKey) {
+    this.dependents.add(newDependent);
+  }
 
-  getSnapshot() {}
+  subscribe(onStoreChange: () => void) {
+    this.result = this.createStoreMethods.evaluate(
+      this.value,
+      this.getDepsMap(this.deps)
+    );
+    this.onStoreChange = onStoreChange;
+
+    return () => {
+      this.onStoreChange = undefined;
+    };
+  }
+
+  getSnapshot() {
+    return this.result;
+  }
 }

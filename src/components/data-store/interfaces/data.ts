@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { Data } from "../data";
 
 export type IKey = string;
 
@@ -9,25 +9,9 @@ export interface IOriginData<D> {
   [key: string]: unknown;
 }
 
-export interface IData<D, R> extends IOriginData<D> {
-  /** 设置对应 value */
-  setValue: (newValue: D) => void;
-  /** 需要重新计算时，触发的回调函数 */
-  onUpdate: (value: D, deps: Record<IKey, D>) => void;
-  /** 所有的依赖项 key */
-  deps: Set<IKey>;
-  /** 依赖当前项的 key */
-  dependents: Set<IKey>;
-
-  /** useSyncExternalStore params */
-  subscribe: Parameters<typeof useSyncExternalStore<R>>["0"];
-  /** useSyncExternalStore params*/
-  getSnapshot: Parameters<typeof useSyncExternalStore<R>>["1"];
-}
-
 export interface IStore<D, R> {
   /** 找到对应的数据源，如果没有抛异常 */
-  get: (key: IKey) => IData<D, R>;
+  get: (key: IKey) => Data<D, R>;
   /** 初始化整个 Store */
   init: (data: IOriginData<D>[]) => Promise<void>;
   /** 清除 Store */
