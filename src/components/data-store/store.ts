@@ -14,7 +14,7 @@ export const createDataStore = <D, R>(
   const { generateKey } = params;
 
   /** 数据源 */
-  const dataStore = new Map<string, Data<D, R>>();
+  const dataStore = new Map<IKey, Data<D, R>>();
 
   const setDependents = () => {
     dataStore.forEach((value, key) => {
@@ -61,13 +61,14 @@ export const createDataStore = <D, R>(
       .reverse()
       .map(get)
       .map((item) => {
-        console.log("123", item);
         item.update();
         item.onStoreChange?.();
       });
   };
 
   const init: IStore<D, R>["init"] = async (data) => {
+    const depsMap = new Map<IKey, Set<IKey>>();
+
     data.forEach((dataItem) => {
       const key = generateKey(dataItem);
       dataStore.set(
@@ -76,6 +77,35 @@ export const createDataStore = <D, R>(
       );
     });
     setDependents();
+
+    Array.from(dataStore.entries()).forEach(([key, dataItem]) => {
+      depsMap.set(key, new Set(dataItem.getDeps()));
+    });
+
+    const initRecursively = () => {
+      const seeds = Array.from(depsMap.entries())
+        .filter(([_, depsSet]) => depsSet.size === 0)
+        .map(([key]) => key);
+
+      if (!seeds.length) {
+        return;
+      }
+
+      seeds.map(get).map((item) => {
+        item.update();
+        item.onStoreChange?.();
+
+        depsMap.delete(item.key);
+
+        Array.from(item.getDependents()).map((dependent) => {
+          depsMap.get(dependent)?.delete(item.key);
+        });
+      });
+
+      initRecursively();
+    };
+
+    initRecursively();
   };
 
   const get: IStore<D, R>["get"] = (key) => {

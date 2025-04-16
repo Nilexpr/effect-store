@@ -1,4 +1,4 @@
-import { FC, useSyncExternalStore } from "react";
+import { FC, useCallback, useState, useSyncExternalStore } from "react";
 import { createDataStore } from "./components/data-store/store";
 
 type Data = {
@@ -19,7 +19,7 @@ const dataStore = createDataStore<Data, string>({
       evaluate(data, deps) {
         // return data.value + JSON.stringify(deps);
         if (data.res) {
-          return data.res;
+          return String(data.res);
         }
         if (data.formula) {
           const value = data.formula
@@ -41,54 +41,58 @@ const dataStore = createDataStore<Data, string>({
               return pre + Number(res);
             }, 0);
 
-          return value;
+          return String(value);
         }
-      },
-      onChange(data) {
-        return { ...data };
+        return "";
       },
     };
   },
 });
 
-dataStore.init([
-  {
-    value: "a",
-    formula: "b+c",
-  },
-  {
-    value: "b",
-    formula: "c+1",
-  },
-  {
-    value: "c",
-    res: 3,
-  },
-  {
-    value: "d",
-    res: 4,
-  },
-  {
-    value: "e",
-    formula: "c+d",
-  },
-  {
-    value: "f",
-    formula: "e+a",
-  },
-  {
-    value: "g",
-    formula: "f+a",
-  },
-]);
+dataStore.init(
+  [
+    {
+      value: "a",
+      formula: "b+c",
+    },
+    {
+      value: "b",
+      formula: "c+1",
+    },
+    {
+      value: "c",
+      res: 3,
+    },
+    {
+      value: "d",
+      res: 4,
+    },
+    {
+      value: "e",
+      formula: "c+d",
+    },
+    {
+      value: "f",
+      formula: "e+a",
+    },
+    {
+      value: "g",
+      formula: "f+a",
+    },
+  ].reverse()
+);
 
 const Item: FC<{ dataKey: string }> = ({ dataKey }) => {
   const itemCfg = dataStore.get(dataKey);
 
   const originData = itemCfg.getOriginData();
 
+  const subscribe = useCallback(itemCfg.subscribe.bind(itemCfg), [
+    itemCfg.subscribe,
+  ]);
+
   const result = useSyncExternalStore(
-    itemCfg.subscribe.bind(itemCfg),
+    subscribe,
     itemCfg.getSnapshot.bind(itemCfg)
   );
 
@@ -117,10 +121,12 @@ const Item: FC<{ dataKey: string }> = ({ dataKey }) => {
 
 function App() {
   const keys = dataStore.getKeys();
+  const [update, setUpdate] = useState({});
   return (
     <section style={{ display: "flex", gap: "2px", flexDirection: "column" }}>
       <div
         onClick={() => {
+          setUpdate({});
           console.log(dataStore);
         }}
       >
