@@ -5,8 +5,6 @@ import type { ICreateDataStoreParams, IKey, IStore } from "./interfaces/data";
  * 创建一个 key value 的 Store，其中每条数据相互依赖，是一张图
  *
  * 当其中一个依赖更新时，更新所有的被依赖项
- *
- * 只存参与计算的 value，如何展示由外部控制
  */
 export const createDataStore = <D, R>(
   params: ICreateDataStoreParams<D, R>
