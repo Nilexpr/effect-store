@@ -36,7 +36,7 @@ const dataStore = createDataStore<Data, string>({
                 return pre + cur;
               }
               const [_, res] = cur;
-              if (res === null) {
+              if (!res) {
                 return pre;
               }
               return pre + Number(res);
@@ -100,8 +100,15 @@ const Item: FC<{ dataKey: string }> = ({ dataKey }) => {
         value={result}
         onChange={(e) => {
           console.log(e.target.value);
+          itemCfg.onChange.bind(itemCfg)((cur) => {
+            return {
+              ...cur,
+              value: e.target.value,
+            };
+          });
         }}
       ></input>
+      <div>{originData.formula}</div>
     </div>
   );
 };
@@ -110,6 +117,13 @@ function App() {
   const keys = dataStore.getKeys();
   return (
     <section style={{ display: "flex", gap: "2px", flexDirection: "column" }}>
+      <div
+        onClick={() => {
+          console.log(dataStore);
+        }}
+      >
+        View
+      </div>
       {keys.map((key) => {
         return <Item dataKey={key} key={key}></Item>;
       })}

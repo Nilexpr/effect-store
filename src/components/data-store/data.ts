@@ -15,8 +15,6 @@ export class Data<D, R> {
   private evaluate: ReturnType<
     ICreateDataStoreParams<D, R>["parser"]
   >["evaluate"];
-  /** 改变的回调 */
-  onChange: (newValue: D) => D;
 
   constructor(
     /** 唯一 Key */
@@ -30,12 +28,11 @@ export class Data<D, R> {
     /** 获取依赖对象 */
     private getDepsMap: (deps: Set<IKey>) => Record<string, readonly [D, R?]>
   ) {
-    const { deps, evaluate, onChange } = createStoreMethods.parser(originData);
+    const { deps, evaluate } = createStoreMethods.parser(originData);
 
     this.dependents = new Set();
     this.deps = new Set(deps);
     this.evaluate = evaluate;
-    this.onChange = onChange;
 
     this.key = key;
   }
@@ -49,6 +46,10 @@ export class Data<D, R> {
     this.updateCallback(this);
   }
 
+  getDeps() {
+    return this.deps;
+  }
+
   getDependents() {
     return this.dependents;
   }
@@ -58,6 +59,13 @@ export class Data<D, R> {
   }
 
   getOriginData(): D {
+    return this.originData;
+  }
+
+  /** 改变的回调 */
+  onChange(cb: (currentValue: D) => D): D {
+    const modifyResult = cb(this.originData);
+    this.originData = modifyResult;
     return this.originData;
   }
 

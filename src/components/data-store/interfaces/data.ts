@@ -27,7 +27,7 @@ export interface ICreateDataStoreParams<D, R> {
     deps: IKey[];
     /** 给定 value 和 deps，能够获取到最终结果值 */
     evaluate: (data: D, deps: Record<IKey, Readonly<[D, R?]>>) => R;
-    /** 改变的回调 */
-    onChange: (data: D) => D;
+    // /** 改变的回调 */
+    // onChange: (cb: (currentValue: D) => D) => D;
   };
 }

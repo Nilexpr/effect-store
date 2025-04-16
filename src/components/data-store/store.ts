@@ -18,8 +18,9 @@ export const createDataStore = <D, R>(
 
   const setDependents = () => {
     dataStore.forEach((value, key) => {
-      const deps = value.getDependents();
+      const deps = value.getDeps();
       const dependents = Array.from(deps).map(get);
+      console.log("dependents", dependents, deps);
       dependents.forEach((dependent) => {
         dependent.addDependents(key);
       });
@@ -77,5 +78,6 @@ export const createDataStore = <D, R>(
     get,
     clear: dataStore.clear,
     getKeys,
+    dataStore,
   };
 };
