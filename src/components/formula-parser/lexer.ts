@@ -99,4 +99,4 @@ export const allTokens = [
   ReferenceLiteral,
 ];
 
-export const FormulaLexer = new Lexer(allTokens);
+export const formulaLexer = new Lexer(allTokens);
