@@ -31,7 +31,6 @@ const dataStore = createDataStore<Data, string>({
               return Number(item);
             })
             .reduce((pre: number, cur) => {
-              console.log(data.value, pre, cur);
               if (typeof cur === "number") {
                 return pre + cur;
               }
@@ -65,18 +64,22 @@ dataStore.init([
     value: "c",
     res: 3,
   },
-  // {
-  //   value: "d",
-  //   res: 4,
-  // },
-  // {
-  //   value: "e",
-  //   formula: "c+d",
-  // },
-  // {
-  //   value: "f",
-  //   formula: "e+a",
-  // },
+  {
+    value: "d",
+    res: 4,
+  },
+  {
+    value: "e",
+    formula: "c+d",
+  },
+  {
+    value: "f",
+    formula: "e+a",
+  },
+  {
+    value: "g",
+    formula: "f+a",
+  },
 ]);
 
 const Item: FC<{ dataKey: string }> = ({ dataKey }) => {
@@ -99,11 +102,10 @@ const Item: FC<{ dataKey: string }> = ({ dataKey }) => {
         placeholder="TODO"
         value={result}
         onChange={(e) => {
-          console.log(e.target.value);
           itemCfg.onChange.bind(itemCfg)((cur) => {
             return {
               ...cur,
-              value: e.target.value,
+              res: e.target.value,
             };
           });
         }}

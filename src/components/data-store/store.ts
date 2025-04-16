@@ -1,5 +1,5 @@
 import { Data } from "./data";
-import type { ICreateDataStoreParams, IStore } from "./interfaces/data";
+import type { ICreateDataStoreParams, IKey, IStore } from "./interfaces/data";
 
 /**
  * 创建一个 key value 的 Store，其中每条数据相互依赖，是一张图
@@ -20,7 +20,6 @@ export const createDataStore = <D, R>(
     dataStore.forEach((value, key) => {
       const deps = value.getDeps();
       const dependents = Array.from(deps).map(get);
-      console.log("dependents", dependents, deps);
       dependents.forEach((dependent) => {
         dependent.addDependents(key);
       });
@@ -41,12 +40,31 @@ export const createDataStore = <D, R>(
   const updateCallback: ConstructorParameters<typeof Data<D, R>>["3"] = (
     origin
   ) => {
-    // TODO 待优化，使用一个更新队列减少不必要的更新
-    const dependents = origin.getDependents();
-    const dependentInstances = Array.from(dependents).map(get);
-    dependentInstances.forEach((item) => {
-      item.update();
-    });
+    const updateQueue: IKey[] = [];
+
+    const updateRecursively = (origin: Data<D, R>) => {
+      const dependents = origin.getDependents();
+      const dependentInstances = Array.from(dependents).map(get);
+      dependentInstances.forEach((item) => {
+        updateQueue.unshift(item.key);
+        updateRecursively(item);
+      });
+    };
+
+    updateRecursively(origin);
+
+    const updateSet = new Set(updateQueue);
+
+    console.log("Updated Scope", updateQueue);
+
+    [...updateSet, origin.key]
+      .reverse()
+      .map(get)
+      .map((item) => {
+        console.log("123", item);
+        item.update();
+        item.onStoreChange?.();
+      });
   };
 
   const init: IStore<D, R>["init"] = async (data) => {
@@ -58,7 +76,6 @@ export const createDataStore = <D, R>(
       );
     });
     setDependents();
-    console.log(dataStore);
   };
 
   const get: IStore<D, R>["get"] = (key) => {
@@ -78,6 +95,5 @@ export const createDataStore = <D, R>(
     get,
     clear: dataStore.clear,
     getKeys,
-    dataStore,
   };
 };

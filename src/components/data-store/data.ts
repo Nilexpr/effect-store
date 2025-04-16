@@ -10,7 +10,7 @@ export class Data<D, R> {
   /** 依赖当前项的 Key */
   private dependents: Set<IKey>;
   /** 给 React 用的 */
-  private onStoreChange?: () => void;
+  onStoreChange?: () => void;
   /** 给定 value 和 deps，能够获取到最终结果值 */
   private evaluate: ReturnType<
     ICreateDataStoreParams<D, R>["parser"]
@@ -42,8 +42,6 @@ export class Data<D, R> {
       this.getOriginData(),
       this.getDepsMap(this.deps)
     );
-    this.onStoreChange?.();
-    this.updateCallback(this);
   }
 
   getDeps() {
@@ -66,14 +64,13 @@ export class Data<D, R> {
   onChange(cb: (currentValue: D) => D): D {
     const modifyResult = cb(this.originData);
     this.originData = modifyResult;
+    this.update();
+    this.updateCallback?.(this);
     return this.originData;
   }
 
   subscribe(onStoreChange: () => void) {
-    this.result = this.evaluate(
-      this.getOriginData(),
-      this.getDepsMap(this.deps)
-    );
+    this.update();
     this.onStoreChange = onStoreChange;
 
     return () => {
