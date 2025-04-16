@@ -26,16 +26,18 @@ export const createDataStore = <D, R>(
     });
   };
 
-  const getDepsMap: ConstructorParameters<typeof Data<D, R>>["3"] = (deps) => {
+  const getDepsMap: ConstructorParameters<typeof Data<D, R>>["4"] = (deps) => {
     return Array.from(deps)
       .map(get)
       .reduce((pre, cur) => {
-        pre[cur.key] = cur.getValue();
+        const snapshot = cur.getSnapshot();
+        const originData = cur.getOriginData();
+        pre[cur.key] = [originData, snapshot];
         return pre;
-      }, {} as Record<string, D>);
+      }, {} as Record<string, Readonly<[D, R?]>>);
   };
 
-  const updateCallback: ConstructorParameters<typeof Data<D, R>>["2"] = (
+  const updateCallback: ConstructorParameters<typeof Data<D, R>>["3"] = (
     origin
   ) => {
     // TODO 待优化，使用一个更新队列减少不必要的更新
@@ -51,10 +53,11 @@ export const createDataStore = <D, R>(
       const key = generateKey(dataItem);
       dataStore.set(
         key,
-        new Data(dataItem, params, updateCallback, getDepsMap, key)
+        new Data(key, dataItem, params, updateCallback, getDepsMap)
       );
-      setDependents();
     });
+    setDependents();
+    console.log(dataStore);
   };
 
   const get: IStore<D, R>["get"] = (key) => {
@@ -65,9 +68,14 @@ export const createDataStore = <D, R>(
     return target;
   };
 
+  const getKeys: IStore<D, R>["getKeys"] = () => {
+    return Array.from(dataStore.keys());
+  };
+
   return {
     init,
     get,
     clear: dataStore.clear,
+    getKeys,
   };
 };

@@ -1,64 +1,52 @@
-import { ICreateDataStoreParams, IKey, IOriginData } from "./interfaces/data";
+import { ICreateDataStoreParams, IKey } from "./interfaces/data";
 
 export class Data<D, R> {
-  /** 需要参与计算的值 */
-  private value: D;
+  /** 唯一 Key */
+  key: IKey;
   /** 计算结果 */
-  private result: R | null = null;
-  /** 其他的值，Store 不关心 */
-  extra: {
-    [key: string]: unknown;
-  };
+  private result?: R;
   /** 所有依赖项的 Key */
   private deps: Set<IKey>;
   /** 依赖当前项的 Key */
   private dependents: Set<IKey>;
   /** 给 React 用的 */
   private onStoreChange?: () => void;
-
-  /** 唯一 Key */
-  key: IKey;
+  /** 给定 value 和 deps，能够获取到最终结果值 */
+  private evaluate: ReturnType<
+    ICreateDataStoreParams<D, R>["parser"]
+  >["evaluate"];
+  /** 改变的回调 */
+  onChange: (newValue: D) => D;
 
   constructor(
-    /** 初始数据 */
-    originData: IOriginData<D>,
+    /** 唯一 Key */
+    key: IKey,
+    /** 原始数据 */
+    private originData: D,
     /** 外部传入的一些工具函数 */
-    private createStoreMethods: ICreateDataStoreParams<D, R>,
+    createStoreMethods: ICreateDataStoreParams<D, R>,
     /** 更新回调 */
     private updateCallback: (origin: Data<D, R>) => void,
     /** 获取依赖对象 */
-    private getDepsMap: (deps: Set<IKey>) => Record<string, D>,
-    /** 唯一 Key */
-    key: IKey
+    private getDepsMap: (deps: Set<IKey>) => Record<string, readonly [D, R?]>
   ) {
-    const { value, ...rest } = originData;
-    this.value = value;
-    this.extra = rest;
+    const { deps, evaluate, onChange } = createStoreMethods.parser(originData);
 
-    const { deps } = createStoreMethods.parser(originData.value);
-
-    this.deps = new Set(...deps);
     this.dependents = new Set();
+    this.deps = new Set(deps);
+    this.evaluate = evaluate;
+    this.onChange = onChange;
 
     this.key = key;
   }
 
   update() {
-    this.result = this.createStoreMethods.evaluate(
-      this.value,
+    this.result = this.evaluate(
+      this.getOriginData(),
       this.getDepsMap(this.deps)
     );
     this.onStoreChange?.();
     this.updateCallback(this);
-  }
-
-  setValue(newValue: D) {
-    this.value = newValue;
-    this.update();
-  }
-
-  getValue() {
-    return this.value;
   }
 
   getDependents() {
@@ -69,9 +57,13 @@ export class Data<D, R> {
     this.dependents.add(newDependent);
   }
 
+  getOriginData(): D {
+    return this.originData;
+  }
+
   subscribe(onStoreChange: () => void) {
-    this.result = this.createStoreMethods.evaluate(
-      this.value,
+    this.result = this.evaluate(
+      this.getOriginData(),
       this.getDepsMap(this.deps)
     );
     this.onStoreChange = onStoreChange;
