@@ -1,6 +1,8 @@
 import { FC, useCallback, useState, useSyncExternalStore } from "react";
 import { createDataStore } from "./components/data-store/store";
+import { PivotTable } from "./components/pivot-table";
 import "./components/formula-parser";
+import { colHeader, rowHeader } from "./mock/pivotTable";
 
 type Data = {
   value: string;
@@ -136,6 +138,7 @@ function App() {
       {keys.map((key) => {
         return <Item dataKey={key} key={key}></Item>;
       })}
+      <PivotTable rowHeader={rowHeader} colHeader={colHeader}></PivotTable>
     </section>
   );
 }

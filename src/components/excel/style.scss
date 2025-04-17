@@ -1,0 +1,59 @@
+.custom-excel--table {
+  --input-error-active-shadow: 0px 0px 4px 1px red;
+  border-bottom: 0.5px solid #626265;
+
+  th {
+    min-width: 160px;
+    max-width: 300px;
+    text-align: left;
+    padding: 2px 4px;
+    background: #f8f8f8;
+
+    &:not(:first-child) {
+      border-left: 0.5px solid #c4c4c9;
+      border-top: 0.5px solid #c4c4c9;
+    }
+  }
+
+  tr {
+    min-width: 100px;
+    border-left: 0.5px solid #c4c4c9;
+    border-top: 0.5px solid #c4c4c9;
+  }
+
+  td {
+    min-width: 100px;
+    transition: all 0.3s ease;
+
+    padding: 4px 8px 4px 8px;
+
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+
+    color: #202023;
+
+    border-top: 0.5px solid #c4c4c9;
+    border-left: 0.5px solid #c4c4c9;
+
+    min-width: 90px;
+    min-height: 30px;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+  }
+
+  input {
+    background: transparent;
+    width: 100%;
+    max-width: 90px;
+    box-sizing: border-box;
+    outline: none;
+  }
+}
