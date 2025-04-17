@@ -1,5 +1,6 @@
 import { FC, useCallback, useState, useSyncExternalStore } from "react";
 import { createDataStore } from "./components/data-store/store";
+import "./components/formula-parser";
 
 type Data = {
   value: string;

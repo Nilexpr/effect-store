@@ -1,47 +1,135 @@
-import { GrammarEnum } from "./constants";
+import { CstNode, IToken, tokenMatcher } from "chevrotain";
+import { CalculateHelper } from "./calculator";
+import { GrammarEnum, OperateType } from "./constants";
 import { formulaParser } from "./parser";
-import { CstNode } from "chevrotain";
+import { Multi, Plus } from "./lexer";
 
-const BaseCstVisitor = formulaParser.getBaseCstVisitorConstructor();
+type Ctx<D, R> = [D, Record<string, Readonly<[D, R]>>, CalculateHelper<D, R>];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyType = any;
+export const getVisitorClass = <D, R>() => {
+  const BaseCstVisitor = formulaParser.getBaseCstVisitorConstructor<
+    Ctx<D, R>,
+    [D, R]
+  >();
 
-export class FormulaInterpreter<D, R> extends BaseCstVisitor {
-  constructor() {
-    super();
-    this.validateVisitor();
-  }
-
-  private data?: D;
-  private deps?: Record<string, Readonly<[D, R?]>>;
-
-  init({ data, deps }: { data: D; deps: Record<string, Readonly<[D, R?]>> }) {
-    this.data = data;
-    this.deps = deps;
-  }
-
-  [GrammarEnum.expression](ctx: AnyType) {
-    if (ctx.additionExpression) {
-      return this.visit(ctx.additionExpression);
-    } else {
-      return this.visit(ctx.uminusExpression);
+  return class FormulaInterpreter extends BaseCstVisitor {
+    constructor() {
+      super();
+      this.validateVisitor();
     }
-  }
 
-  [GrammarEnum.uminusExpression](ctx: AnyType) {}
+    [GrammarEnum.expression](ctx: CstNode["children"], args: Ctx<D, R>) {
+      console.log("expression", { ctx, args });
+      return this.visit(ctx.additionExpression[0] as CstNode, args);
+    }
 
-  [GrammarEnum.additionExpression](ctx: AnyType) {}
+    [GrammarEnum.additionExpression](
+      ctx: CstNode["children"],
+      args: Ctx<D, R>
+    ) {
+      console.log("additionExpression", {
+        ctx,
+        args,
+      });
+      let result = this.visit(ctx.lhs[0] as CstNode, args);
 
-  [GrammarEnum.multiplicationExpression](ctx: AnyType) {}
+      if (ctx.rhs) {
+        ctx.rhs.forEach((rhsOperand, idx) => {
+          console.log("rhsOperand", rhsOperand);
+          const rhsValue = this.visit(rhsOperand as CstNode, args);
+          const operator = ctx.AdditionOperator[idx] as IToken;
 
-  [GrammarEnum.formulaExpression](ctx: AnyType) {}
+          if (tokenMatcher(operator, Plus)) {
+            result = [
+              args[0],
+              args[2].compute(OperateType.Plus, result, rhsValue),
+            ];
+          } else {
+            result = [
+              args[0],
+              args[2].compute(OperateType.Minus, result, rhsValue),
+            ];
+          }
+        });
+      }
 
-  [GrammarEnum.atomicExpression](ctx: AnyType) {}
+      return result;
+    }
 
-  [GrammarEnum.parenthesisExpression](ctx: AnyType) {}
+    [GrammarEnum.multiplicationExpression](
+      ctx: CstNode["children"],
+      args: Ctx<D, R>
+    ) {
+      console.log("multiplicationExpression", { ctx, args });
 
-  [GrammarEnum.commaExpression](ctx: AnyType) {}
+      let result = this.visit(ctx.lhs[0] as CstNode, args);
 
-  [GrammarEnum.referenceExpression](ctx: AnyType) {}
-}
+      if (ctx.rhs) {
+        ctx.rhs.forEach((rhsOperand, idx) => {
+          const rhsValue = this.visit(rhsOperand as CstNode, args);
+          const operator = ctx.MultiplicationOperator[idx];
+
+          if (tokenMatcher(operator as IToken, Multi)) {
+            result = [
+              args[0],
+              args[2].compute(OperateType.Multi, result, rhsValue),
+            ];
+          } else {
+            result = [
+              args[0],
+              args[2].compute(OperateType.Div, result, rhsValue),
+            ];
+          }
+        });
+      }
+
+      return result;
+    }
+
+    [GrammarEnum.formulaExpression](ctx: CstNode["children"], args: Ctx<D, R>) {
+      console.log("formulaExpression", { ctx, args });
+      // return this.calculateHelper.compute(OperateType.Uminus, this.);
+    }
+
+    [GrammarEnum.atomicExpression](ctx: CstNode["children"], args: Ctx<D, R>) {
+      console.log("atomicExpression", { ctx, args });
+      if (ctx.parenthesisExpression) {
+        return this.visit(ctx.parenthesisExpression[0] as CstNode, args);
+      } else if (ctx.NumberLiteral) {
+        const token = ctx.NumberLiteral[0] as IToken;
+        return args[2].compute(OperateType.Literal, [
+          token.image as D,
+          token.image as R,
+        ]);
+      } else if (ctx.referenceExpression) {
+        console.log("ctx.referenceExpression", ctx.referenceExpression);
+        return this.visit(ctx.referenceExpression[0] as CstNode, args);
+      }
+      // return this.calculateHelper.compute(OperateType.Uminus, this.);
+    }
+
+    [GrammarEnum.parenthesisExpression](
+      ctx: CstNode["children"],
+      args: Ctx<D, R>
+    ) {
+      console.log("parenthesisExpression", { ctx, args });
+      return this.visit(ctx.expression[0] as CstNode, args);
+      // return this.calculateHelper.compute(OperateType.Uminus, this.);
+    }
+
+    [GrammarEnum.referenceExpression](
+      ctx: CstNode["children"],
+      args: Ctx<D, R>
+    ) {
+      console.log("referenceExpression", { ctx, args });
+      const key = (ctx.ReferenceLiteral[0] as IToken).image;
+      const depValue = args[1][key];
+
+      if (!depValue) {
+        console.error(`reference error on ${key}`, { ctx, args });
+      }
+
+      return depValue;
+    }
+  };
+};

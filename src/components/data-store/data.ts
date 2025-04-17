@@ -38,7 +38,7 @@ export class Data<D, R> {
   }
 
   update() {
-    console.log(`${this.key} got updated`);
+    // console.log(`${this.key} got updated`);
     this.result = this.evaluate(
       this.getOriginData(),
       this.getDepsMap(this.deps)
@@ -71,7 +71,7 @@ export class Data<D, R> {
   }
 
   subscribe(onStoreChange: () => void) {
-    console.log("subscribe");
+    // console.log("subscribe");
     this.onStoreChange = onStoreChange;
 
     return () => {

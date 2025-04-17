@@ -4,7 +4,6 @@ import {
   allTokens,
   FormulaLiteral,
   LParen,
-  Minus,
   MultiplicationOperator,
   NumberLiteral,
   RParen,
@@ -23,24 +22,11 @@ class FormulaParser extends CstParser {
     this.OR([
       {
         ALT: () => {
-          this.SUBRULE(this.uminusExpression);
-        },
-      },
-      {
-        ALT: () => {
           this.SUBRULE(this.additionExpression);
         },
       },
     ]);
   });
-
-  [GrammarEnum.uminusExpression] = this.RULE(
-    GrammarEnum.uminusExpression,
-    () => {
-      this.CONSUME(Minus);
-      this.SUBRULE(this.expression);
-    }
-  );
 
   [GrammarEnum.additionExpression] = this.RULE(
     GrammarEnum.additionExpression,
@@ -69,7 +55,10 @@ class FormulaParser extends CstParser {
     () => {
       this.CONSUME(FormulaLiteral, { LABEL: "formula" });
       this.CONSUME(LParen);
-      this.SUBRULE(this.commaExpression);
+      this.MANY(() => {
+        this.CONSUME(Comma);
+        this.SUBRULE(this.atomicExpression, { LABEL: "rhs" });
+      });
       this.CONSUME(RParen);
     }
   );
@@ -94,14 +83,6 @@ class FormulaParser extends CstParser {
       this.CONSUME(RParen);
     }
   );
-
-  [GrammarEnum.commaExpression] = this.RULE(GrammarEnum.commaExpression, () => {
-    this.SUBRULE(this.expression, { LABEL: "lhs" });
-    this.MANY(() => {
-      this.CONSUME(Comma);
-      this.SUBRULE2(this.expression, { LABEL: "rhs" });
-    });
-  });
 
   [GrammarEnum.referenceExpression] = this.RULE(
     GrammarEnum.referenceExpression,

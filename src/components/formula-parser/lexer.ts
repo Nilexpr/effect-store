@@ -47,16 +47,6 @@ export const FormulaLiteral = createToken({
   name: "FormulaLiteral",
   pattern: Lexer.NA,
 });
-export const Sum = createToken({
-  name: "Sum",
-  pattern: /SUM/i,
-  categories: FormulaLiteral,
-});
-export const Avg = createToken({
-  name: "Avg",
-  pattern: /AVG/i,
-  categories: FormulaLiteral,
-});
 export const Max = createToken({
   name: "Max",
   pattern: /MAX/i,
@@ -87,8 +77,6 @@ export const allTokens = [
   Div,
   LParen,
   RParen,
-  Sum,
-  Avg,
   Max,
   Min,
   NumberLiteral,
