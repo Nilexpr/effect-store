@@ -41,7 +41,6 @@ export const parseFormula = <D, R>(
 
 const calculateMethods: Record<OperateType, Calculate<number, number>> = {
   [OperateType.Plus]: (a, b) => {
-    console.log("Plus", a, b);
     return a[1] + b[1];
   },
   [OperateType.Minus]: (a, b) => {
@@ -70,7 +69,10 @@ const calculateMethods: Record<OperateType, Calculate<number, number>> = {
   },
 };
 
-const parser = parseFormula<number, number>("MIN(1 ,a - b)", calculateMethods);
+const parser = parseFormula<number, number>(
+  "MIN(1 , a / b /b)",
+  calculateMethods
+);
 
 const res = parser(1, {
   a: [1, 2],

@@ -19,7 +19,7 @@ export const getVisitorClass = <D, R>() => {
     }
 
     [GrammarEnum.expression](ctx: CstNode["children"], args: Ctx<D, R>) {
-      console.log("expression", { ctx, args });
+      // console.log("expression", { ctx, args });
       return this.visit(ctx.additionExpression[0] as CstNode, args);
     }
 
@@ -27,15 +27,15 @@ export const getVisitorClass = <D, R>() => {
       ctx: CstNode["children"],
       args: Ctx<D, R>
     ) {
-      console.log("additionExpression", {
-        ctx,
-        args,
-      });
+      // console.log("additionExpression", {
+      //   ctx,
+      //   args,
+      // });
       let result = this.visit(ctx.lhs[0] as CstNode, args);
 
       if (ctx.rhs) {
         ctx.rhs.forEach((rhsOperand, idx) => {
-          console.log("rhsOperand", rhsOperand);
+          // console.log("rhsOperand", rhsOperand);
           const rhsValue = this.visit(rhsOperand as CstNode, args);
           const operator = ctx.AdditionOperator[idx] as IToken;
 
@@ -85,7 +85,7 @@ export const getVisitorClass = <D, R>() => {
     }
 
     [GrammarEnum.formulaExpression](ctx: CstNode["children"], args: Ctx<D, R>) {
-      console.log("formulaExpression", { ctx, args });
+      // console.log("formulaExpression", { ctx, args });
       const formula = ctx.formula[0] as IToken;
       if (tokenMatcher(formula, Min)) {
         return ctx.rhs.reduce((pre, cur) => {
@@ -115,7 +115,7 @@ export const getVisitorClass = <D, R>() => {
     }
 
     [GrammarEnum.atomicExpression](ctx: CstNode["children"], args: Ctx<D, R>) {
-      console.log("atomicExpression", { ctx, args });
+      // console.log("atomicExpression", { ctx, args });
       if (ctx.parenthesisExpression) {
         return this.visit(ctx.parenthesisExpression[0] as CstNode, args);
       } else if (ctx.NumberLiteral) {
@@ -126,7 +126,7 @@ export const getVisitorClass = <D, R>() => {
         ]);
         return [res, res];
       } else if (ctx.referenceExpression) {
-        console.log("ctx.referenceExpression", ctx.referenceExpression);
+        // console.log("ctx.referenceExpression", ctx.referenceExpression);
         return this.visit(ctx.referenceExpression[0] as CstNode, args);
       } else if (ctx.formulaExpression) {
         return this.visit(ctx.formulaExpression[0] as CstNode, args);
@@ -138,7 +138,7 @@ export const getVisitorClass = <D, R>() => {
       ctx: CstNode["children"],
       args: Ctx<D, R>
     ) {
-      console.log("parenthesisExpression", { ctx, args });
+      // console.log("parenthesisExpression", { ctx, args });
       return this.visit(ctx.expression[0] as CstNode, args);
       // return this.calculateHelper.compute(OperateType.Uminus, this.);
     }
@@ -147,7 +147,7 @@ export const getVisitorClass = <D, R>() => {
       ctx: CstNode["children"],
       args: Ctx<D, R>
     ) {
-      console.log("referenceExpression", { ctx, args });
+      // console.log("referenceExpression", { ctx, args });
       const key = (ctx.ReferenceLiteral[0] as IToken).image;
       const depValue = args[1][key];
 
