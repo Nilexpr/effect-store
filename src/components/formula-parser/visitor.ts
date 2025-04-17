@@ -2,7 +2,7 @@ import { CstNode, IToken, tokenMatcher } from "chevrotain";
 import { CalculateHelper } from "./calculator";
 import { GrammarEnum, OperateType } from "./constants";
 import { formulaParser } from "./parser";
-import { Multi, Plus } from "./lexer";
+import { Max, Min, Multi, Plus } from "./lexer";
 
 type Ctx<D, R> = [D, Record<string, Readonly<[D, R]>>, CalculateHelper<D, R>];
 
@@ -60,8 +60,6 @@ export const getVisitorClass = <D, R>() => {
       ctx: CstNode["children"],
       args: Ctx<D, R>
     ) {
-      console.log("multiplicationExpression", { ctx, args });
-
       let result = this.visit(ctx.lhs[0] as CstNode, args);
 
       if (ctx.rhs) {
@@ -88,6 +86,31 @@ export const getVisitorClass = <D, R>() => {
 
     [GrammarEnum.formulaExpression](ctx: CstNode["children"], args: Ctx<D, R>) {
       console.log("formulaExpression", { ctx, args });
+      const formula = ctx.formula[0] as IToken;
+      if (tokenMatcher(formula, Min)) {
+        return ctx.rhs.reduce((pre, cur) => {
+          if ("name" in cur) {
+            const curValue = this.visit(cur, args);
+            if (!pre) {
+              return curValue;
+            }
+            const a = args[2].compute(OperateType.Min, pre, curValue);
+            return [args[0], a] as const;
+          }
+          const curValue = args[2].compute(OperateType.Literal, [
+            cur.image as D,
+            cur.image as R,
+          ]);
+          if (!pre) {
+            return [args[0], curValue];
+          }
+          const a = args[2].compute(OperateType.Min, pre, [args[0], curValue]);
+          return a;
+        }, null as null | [D, R]);
+      }
+      if (tokenMatcher(formula, Max)) {
+        return ctx.rhs.reduce((pre, cur) => {});
+      }
       // return this.calculateHelper.compute(OperateType.Uminus, this.);
     }
 
@@ -97,13 +120,16 @@ export const getVisitorClass = <D, R>() => {
         return this.visit(ctx.parenthesisExpression[0] as CstNode, args);
       } else if (ctx.NumberLiteral) {
         const token = ctx.NumberLiteral[0] as IToken;
-        return args[2].compute(OperateType.Literal, [
+        const res = args[2].compute(OperateType.Literal, [
           token.image as D,
           token.image as R,
         ]);
+        return [res, res];
       } else if (ctx.referenceExpression) {
         console.log("ctx.referenceExpression", ctx.referenceExpression);
         return this.visit(ctx.referenceExpression[0] as CstNode, args);
+      } else if (ctx.formulaExpression) {
+        return this.visit(ctx.formulaExpression[0] as CstNode, args);
       }
       // return this.calculateHelper.compute(OperateType.Uminus, this.);
     }

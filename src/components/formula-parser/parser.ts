@@ -55,9 +55,11 @@ class FormulaParser extends CstParser {
     () => {
       this.CONSUME(FormulaLiteral, { LABEL: "formula" });
       this.CONSUME(LParen);
+
+      this.SUBRULE(this.additionExpression, { LABEL: "rhs" });
       this.MANY(() => {
         this.CONSUME(Comma);
-        this.SUBRULE(this.atomicExpression, { LABEL: "rhs" });
+        this.SUBRULE2(this.additionExpression, { LABEL: "rhs" });
       });
       this.CONSUME(RParen);
     }
