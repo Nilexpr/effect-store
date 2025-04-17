@@ -38,15 +38,14 @@ export const PivotTable: FC<PivotTableProps> = (props) => {
               {row.getVisibleCells().map((cell, colIndex) => {
                 if (colIndex === 0) {
                   return (
-                    <th key={cell.id}>
+                    <Fragment key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
                       )}
-                    </th>
+                    </Fragment>
                   );
                 }
-
                 return (
                   <Fragment key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -1,57 +1,52 @@
 import { useMemo } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { PivotTableProps } from "../interfaces/props";
+import { Recursively } from "../interfaces/tool";
+import { Header } from "../interfaces/header";
 
 const columnHelper = createColumnHelper<CellData[]>();
+
+const test = (colHeader: Recursively<Header>) => {
+  if (colHeader.children) {
+    return columnHelper.display("123", {
+      header: () => colHeader.main.label,
+      cell: () => "Cell",
+    });
+  }
+  return columnHelper.accessor("123", {
+    header: () => colHeader.main.label,
+    cell: () => "Cell",
+  });
+};
 
 export const useColumns = ({
   pivotTableProps,
 }: {
   pivotTableProps: PivotTableProps;
 }) => {
-  const { rowHeader } = pivotTableProps;
+  const { rowHeaders, colHeaders } = pivotTableProps;
 
   const columns = useMemo(() => {
     return [
+      columnHelper.accessor("rowHeader", {
+        cell: (info) => info.getValue(),
+        header: () => pivotTableProps.IntersectionCell,
+      }),
+      colHeaders.map((colHeader) => {}),
       columnHelper.group({
-        header: "Info",
-        footer: (props) => props.column.id,
+        header: "More Info",
         columns: [
-          columnHelper.group({
-            id: "rowHeader",
+          columnHelper.accessor("visits", {
             header: () => (
-              <div className="text-[12px]leading-4 flex flex-row gap-1 tracking-[0.5px] text-[#626265]">
-                <div>价格信息</div>
-                <button className="text-[#16A5AF]">一键折叠</button>
-              </div>
+              <th>
+                <span>Visits</span>,
+              </th>
             ),
-            columns: [
-              columnHelper.accessor("visits", {
-                header: () => <span>Visits</span>,
-                footer: (props) => props.column.id,
-              }),
-              columnHelper.accessor("status", {
-                header: "Status",
-                footer: (props) => props.column.id,
-              }),
-            ],
+            footer: (props) => props.column.id,
           }),
-          columnHelper.group({
-            header: "More Info",
-            columns: [
-              columnHelper.accessor("visits", {
-                header: () => <span>Visits</span>,
-                footer: (props) => props.column.id,
-              }),
-              columnHelper.accessor("status", {
-                header: "Status",
-                footer: (props) => props.column.id,
-              }),
-              columnHelper.accessor("progress", {
-                header: "Profile Progress",
-                footer: (props) => props.column.id,
-              }),
-            ],
+          columnHelper.accessor("progress", {
+            header: "Profile Progress",
+            footer: (props) => props.column.id,
           }),
         ],
       }),

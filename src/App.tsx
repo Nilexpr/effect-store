@@ -138,7 +138,11 @@ function App() {
       {keys.map((key) => {
         return <Item dataKey={key} key={key}></Item>;
       })}
-      <PivotTable rowHeader={rowHeader} colHeader={colHeader}></PivotTable>
+      <PivotTable
+        rowHeader={rowHeader}
+        colHeader={colHeader}
+        IntersectionCell={<div>123123</div>}
+      ></PivotTable>
     </section>
   );
 }
