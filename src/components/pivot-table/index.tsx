@@ -1,7 +1,14 @@
-import { FC, Fragment } from "react";
+import React, {
+  cloneElement,
+  FC,
+  Fragment,
+  ReactElement,
+  ReactNode,
+} from "react";
 import { PivotTableProps } from "./interfaces/props";
 import { useTableConfig } from "./hooks/useTableConfig";
 import { flexRender, useReactTable } from "@tanstack/react-table";
+import "./style.css";
 
 export const PivotTable: FC<PivotTableProps> = (props) => {
   const tableCfg = useTableConfig({ pivotTableProps: props });
@@ -10,21 +17,40 @@ export const PivotTable: FC<PivotTableProps> = (props) => {
   return (
     <div>
       <thead>
-        {tableInstance.getHeaderGroups().map((headerGroup) => {
+        {tableInstance.getHeaderGroups().map((headerGroup, index) => {
+          // console.log({
+          //   headerGroup: tableInstance.getHeaderGroups()
+          // })
           return (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder ? null : (
-                      <div>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </div>
-                    )}
-                  </th>
+                const meta = header.column.columnDef.meta as any;
+                const curSpan = index + 1;
+                const colSpan = header.colSpan;
+
+                if (meta?.startRowSpan && meta?.endRowSpan) {
+                  if (meta.startRowSpan === curSpan) {
+                    return cloneElement(
+                      flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      ) as ReactElement<HTMLTableCellElement>,
+                      {
+                        rowSpan: meta.endRowSpan - meta.startRowSpan + 1,
+                        colSpan,
+                      }
+                    );
+                  }
+                  return null;
+                }
+                return cloneElement(
+                  flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  ) as ReactElement<HTMLTableCellElement>,
+                  {
+                    colSpan,
+                  }
                 );
               })}
             </tr>

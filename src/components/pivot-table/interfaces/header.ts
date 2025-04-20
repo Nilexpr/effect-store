@@ -1,13 +1,15 @@
 import type { Recursively } from "./tool";
+import { HTMLAttributes } from "react";
 
 export interface Header {
   /** 表头 */
-  label: React.ReactNode;
+  label: React.ReactElement<HTMLAttributes<HTMLTableCellElement>>;
+  // label: React.ReactElement;
   /** 唯一 Key */
-  key: React.Key;
+  key: string;
   align?: string;
 }
 
-export type RowHeader = Recursively<Header>[];
+export type RowHeaders = Recursively<Header>[];
 
-export type ColHeader = Recursively<Header>[];
+export type ColHeaders = Recursively<Header>[];

@@ -1,19 +1,20 @@
 import { getCoreRowModel, TableOptions } from "@tanstack/react-table";
 import { useColumns } from "./useColumns";
 import { PivotTableProps } from "../interfaces/props";
+import { useMemo } from "react";
 
-export const useTableConfig = ({
+export function useTableConfig({
   pivotTableProps,
 }: {
   pivotTableProps: PivotTableProps;
-}): TableOptions<any> => {
+}): TableOptions<any> {
   const columnsCfg = useColumns({
     pivotTableProps,
   });
 
-  return {
+  return useMemo(() => ({
     columns: columnsCfg.columns,
     data: [],
     getCoreRowModel: getCoreRowModel(),
-  };
-};
+  }), [columnsCfg.columns]);
+}

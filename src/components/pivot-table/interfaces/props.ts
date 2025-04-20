@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
-import { ColHeader, RowHeader } from "./header";
+import { ColHeaders, RowHeaders } from "./header";
 
 export interface PivotTableProps {
-  rowHeaders: RowHeader;
-  colHeaders: ColHeader;
+  rowHeaders: RowHeaders;
+  colHeaders: ColHeaders;
   IntersectionCell: ReactNode;
 }

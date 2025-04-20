@@ -1,11 +1,14 @@
-import i18n from '@/i18n';
-import { createColumnHelper } from '@tanstack/react-table';
-import { ExcelProps, ExcelState } from '../../interface/excel';
-import { useMemo } from 'react';
-import { calIndexInRecursively, getCellByIndexRecursively } from '../../utils/calIndexRecursively';
-import clsx from 'clsx';
+import i18n from "@/i18n";
+import { createColumnHelper } from "@tanstack/react-table";
+import { ExcelProps, ExcelState } from "../../interface/excel";
+import { useMemo } from "react";
+import {
+  calIndexInRecursively,
+  getCellByIndexRecursively,
+} from "../../utils/calIndexRecursively";
+import clsx from "clsx";
 
-const columnHelper = createColumnHelper<ExcelState['data'][number]>();
+const columnHelper = createColumnHelper<ExcelState["data"][number]>();
 
 export const useColColumns = ({
   colHeaders,
@@ -13,13 +16,13 @@ export const useColColumns = ({
   overallHeaderCell,
   renderCell,
   updater,
-}: Omit<ExcelProps, 'data'> & {
+}: Omit<ExcelProps, "data"> & {
   updater: () => void;
 }) => {
   const colColumns = useMemo(() => {
     return [
       columnHelper.display({
-        id: 'rowHeader',
+        id: "rowHeader",
         header: (props) => {
           // const handler = props.table.toggleAllRowsExpanded();
           return (
@@ -31,15 +34,15 @@ export const useColColumns = ({
                   updater?.();
                 }}
                 style={{
-                  color: 'rgb(22,165,175)',
+                  color: "rgb(22,165,175)",
                 }}
               >
                 {props.table.getIsAllRowsExpanded()
                   ? (i18n.t(
-                      'bigdataoverseafront_useColColumns_columns.useColColumns.904853-0' /* 折叠 */,
+                      "bigdataoverseafront_useColColumns_columns.useColColumns.904853-0" /* 折叠 */
                     ) as string)
                   : (i18n.t(
-                      'bigdataoverseafront_useColColumns_columns.useColColumns.907972-0' /* 展开 */,
+                      "bigdataoverseafront_useColColumns_columns.useColColumns.907972-0" /* 展开 */
                     ) as string)}
               </button>
             </div>
@@ -57,9 +60,11 @@ export const useColColumns = ({
             <div
               style={{
                 paddingLeft: `${row.depth * 12}px`,
-                fontWeight: canExpand ? '800' : '500',
-                color: rowDef?.depth === 1 ? 'rgb(32, 32, 35)' : 'rgb(98,98,101)',
-                textAlign: rowDef?.depth === 1 ? 'left' : (rowDef.main as any)?.align,
+                fontWeight: canExpand ? "800" : "500",
+                color:
+                  rowDef?.depth === 1 ? "rgb(32, 32, 35)" : "rgb(98,98,101)",
+                textAlign:
+                  rowDef?.depth === 1 ? "left" : (rowDef.main as any)?.align,
               }}
               onClick={() => {
                 row.getToggleExpandedHandler()?.();
@@ -69,10 +74,10 @@ export const useColColumns = ({
                 });
               }}
               className={clsx(
-                ' cursor-pointer text-left text-[12px] font-medium leading-[16px] tracking-[0.5px] text-[#626265]',
+                " cursor-pointer text-left text-[12px] font-medium leading-[16px] tracking-[0.5px] text-[#626265]",
                 {
-                  'text-[#202023]': canExpand,
-                },
+                  "text-[#202023]": canExpand,
+                }
               )}
             >
               {/* <div>{JSON.stringify(rowDef)}</div> */}
@@ -93,7 +98,10 @@ export const useColColumns = ({
             columns: header.children.map((subHeader) => {
               return columnHelper.accessor(
                 (info) => {
-                  const colIndex = calIndexInRecursively(colHeaders, subHeader.main).resIndex!;
+                  const colIndex = calIndexInRecursively(
+                    colHeaders,
+                    subHeader.main
+                  ).resIndex!;
 
                   return info[colIndex];
                 },
@@ -116,7 +124,7 @@ export const useColColumns = ({
 
                     return <>{renderCell(cellValue)}</>;
                   },
-                },
+                }
               );
             }),
           });

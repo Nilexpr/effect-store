@@ -139,9 +139,9 @@ function App() {
         return <Item dataKey={key} key={key}></Item>;
       })}
       <PivotTable
-        rowHeader={rowHeader}
-        colHeader={colHeader}
-        IntersectionCell={<div>123123</div>}
+        rowHeaders={rowHeader}
+        colHeaders={colHeader}
+        IntersectionCell={<th>IntersectionCell</th>}
       ></PivotTable>
     </section>
   );
