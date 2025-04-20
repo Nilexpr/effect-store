@@ -142,6 +142,20 @@ function App() {
         rowHeaders={rowHeader}
         colHeaders={colHeader}
         IntersectionCell={<th>IntersectionCell</th>}
+        data={[
+          {
+            a: 1,
+          },
+          {
+            a: 1,
+          },
+          {
+            a: 1,
+          },
+          {
+            a: 1,
+          },
+        ]}
       ></PivotTable>
     </section>
   );

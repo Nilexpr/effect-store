@@ -12,9 +12,12 @@ export function useTableConfig({
     pivotTableProps,
   });
 
-  return useMemo(() => ({
-    columns: columnsCfg.columns,
-    data: [],
-    getCoreRowModel: getCoreRowModel(),
-  }), [columnsCfg.columns]);
+  return useMemo(
+    () => ({
+      columns: columnsCfg.columns,
+      data: pivotTableProps.data,
+      getCoreRowModel: getCoreRowModel(),
+    }),
+    [columnsCfg.columns, pivotTableProps.data]
+  );
 }

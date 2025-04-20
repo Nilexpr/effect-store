@@ -1,21 +1,15 @@
-import React, {
-  cloneElement,
-  FC,
-  Fragment,
-  ReactElement,
-  ReactNode,
-} from "react";
+import { cloneElement, FC, Fragment, ReactElement } from "react";
 import { PivotTableProps } from "./interfaces/props";
 import { useTableConfig } from "./hooks/useTableConfig";
 import { flexRender, useReactTable } from "@tanstack/react-table";
 import "./style.css";
 
-export const PivotTable: FC<PivotTableProps> = (props) => {
+export const PivotTable: FC<PivotTableProps<T>> = (props) => {
   const tableCfg = useTableConfig({ pivotTableProps: props });
   const tableInstance = useReactTable(tableCfg);
 
   return (
-    <div>
+    <table>
       <thead>
         {tableInstance.getHeaderGroups().map((headerGroup, index) => {
           // console.log({
@@ -26,7 +20,7 @@ export const PivotTable: FC<PivotTableProps> = (props) => {
               {headerGroup.headers.map((header) => {
                 const meta = header.column.columnDef.meta as any;
                 const curSpan = index + 1;
-                const colSpan = header.colSpan;
+                const colSpan = meta?.colSpan ?? header.colSpan;
 
                 if (meta?.startRowSpan && meta?.endRowSpan) {
                   if (meta.startRowSpan === curSpan) {
@@ -82,6 +76,6 @@ export const PivotTable: FC<PivotTableProps> = (props) => {
           );
         })}
       </tbody>
-    </div>
+    </table>
   );
 };
